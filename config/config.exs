@@ -9,7 +9,8 @@ import Config
 
 config :bus_info_gtfs,
   ecto_repos: [BusInfoGtfs.Repo],
-  generators: [timestamp_type: :utc_datetime]
+  generators: [timestamp_type: :utc_datetime],
+  gtfs_dir: Path.expand("../GTFS", __DIR__)
 
 # Configure the endpoint
 config :bus_info_gtfs, BusInfoGtfsWeb.Endpoint,

@@ -1,8 +1,21 @@
 defmodule BusInfoGtfsWeb.PageControllerTest do
   use BusInfoGtfsWeb.ConnCase
 
-  test "GET /", %{conn: conn} do
-    conn = get(conn, ~p"/")
-    assert html_response(conn, 200) =~ "Peace of mind from prototype to production"
+  @tag capture_log: true
+  test "GET / lists the bus routes", %{conn: conn} do
+    document =
+      conn
+      |> get(~p"/")
+      |> html_response(200)
+      |> LazyHTML.from_fragment()
+
+    assert LazyHTML.text(document) =~ "Bilbao Bus"
+
+    assert length(LazyHTML.to_tree(LazyHTML.query(document, "#routes li"))) == 2
+    assert LazyHTML.text(document) =~ "ZIRKULARRA/CIRCULAR"
+    assert LazyHTML.text(document) =~ "ERREKATXO/EL REGATO - LASESARRE"
+
+    assert LazyHTML.to_tree(LazyHTML.query_by_id(document, "route-1")) != []
+    assert LazyHTML.to_tree(LazyHTML.query(document, "#route-1 .hero-chevron-right")) != []
   end
 end

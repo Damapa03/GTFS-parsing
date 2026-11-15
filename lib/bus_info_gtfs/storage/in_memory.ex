@@ -1,0 +1,54 @@
+defmodule BusInfoGtfs.Storage.InMemory do
+  @moduledoc """
+  In-memory `BusInfoGtfs.Storage` implementation.
+
+  It keeps the ingested tables in memory, which makes it a good fit for a
+  read-only dataset loaded once from a GTFS directory at runtime.
+  """
+
+  @behaviour BusInfoGtfs.Storage
+
+  alias BusInfoGtfs.Domain.StopVisit
+
+  defstruct routes: [],
+            shapes: [],
+            trips: [],
+            stops: [],
+            stop_times: []
+
+  @impl true
+  def replace_all(%__MODULE__{} = state, tables) do
+    {:ok,
+     %__MODULE__{
+       state
+       | routes: tables.routes,
+         shapes: tables.shapes,
+         trips: tables.trips,
+         stops: tables.stops,
+         stop_times: tables.stop_times
+     }}
+  end
+
+  @impl true
+  def routes(state), do: Enum.sort_by(state.routes, & &1.route_id)
+
+  @impl true
+  def first_trip(state, route_id) do
+    case Enum.find(state.trips, &(&1.route_id == route_id)) do
+      nil -> {:error, :no_trip}
+      trip -> {:ok, trip}
+    end
+  end
+
+  @impl true
+  def stops_for_trip(state, trip_id) do
+    stops_by_id = Map.new(state.stops, &{&1.stop_id, &1})
+
+    state.stop_times
+    |> Enum.filter(&(&1.trip_id == trip_id))
+    |> Enum.sort_by(& &1.stop_sequence)
+    |> Enum.map(fn stop_time ->
+      %StopVisit{stop: Map.fetch!(stops_by_id, stop_time.stop_id), stop_time: stop_time}
+    end)
+  end
+end
