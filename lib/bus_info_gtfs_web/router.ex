@@ -18,6 +18,7 @@ defmodule BusInfoGtfsWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+    live "/routes/:route_id", RouteLive, :show
   end
 
   # Other scopes may use custom stacks.

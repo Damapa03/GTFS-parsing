@@ -1,0 +1,4 @@
+stop_id,stop_code,stop_name,stop_lat,stop_lon,zone_id
+100,100,Polideportivo Lasesarre,43.3020520379822,-2.99096700198891,
+200,200,Bagatza 3,43.301035041349,-2.9938549962222,
+300,300,Muelle de La Benedicta,43.2937,-2.9915,

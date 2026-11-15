@@ -10,8 +10,8 @@ config :bus_info_gtfs, BusInfoGtfs.Repo,
   pool_size: 5,
   pool: Ecto.Adapters.SQL.Sandbox
 
-# Use the small fixtures instead of the real GTFS dataset in tests.
-config :bus_info_gtfs, gtfs_dir: Path.expand("../test/fixtures/gtfs", __DIR__)
+# Use the small web fixtures instead of the real GTFS dataset in tests.
+config :bus_info_gtfs, gtfs_dir: Path.expand("../test/fixtures/gtfs_web", __DIR__)
 
 # We don't run a server during test. If one is required,
 # you can enable the server option below.

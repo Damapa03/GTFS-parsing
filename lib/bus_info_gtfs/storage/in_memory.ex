@@ -33,6 +33,9 @@ defmodule BusInfoGtfs.Storage.InMemory do
   def routes(state), do: Enum.sort_by(state.routes, & &1.route_id)
 
   @impl true
+  def trips(state, route_id), do: Enum.filter(state.trips, &(&1.route_id == route_id))
+
+  @impl true
   def first_trip(state, route_id) do
     case Enum.find(state.trips, &(&1.route_id == route_id)) do
       nil -> {:error, :no_trip}

@@ -10,15 +10,28 @@ defmodule BusInfoGtfs.Catalog do
 
   require Logger
 
+  alias BusInfoGtfs.Domain.{Route, StopVisit}
   alias BusInfoGtfs.Ingest
   alias BusInfoGtfs.Services.ExploreRoute
   alias BusInfoGtfs.Storage.InMemory
 
   @storage_key {__MODULE__, :storage}
 
+  @type day :: ExploreRoute.day()
+
   @doc "Returns every route ordered by `route_id`."
-  @spec list_routes() :: [BusInfoGtfs.Domain.Route.t()]
+  @spec list_routes() :: [Route.t()]
   def list_routes, do: ExploreRoute.routes(storage())
+
+  @doc "Returns the route with `route_id`."
+  @spec get_route(integer()) :: {:ok, Route.t()} | {:error, :not_found}
+  def get_route(route_id), do: ExploreRoute.route(storage(), route_id)
+
+  @doc "Returns the stops of a route for a service day and direction."
+  @spec stops_for_route(integer(), day(), boolean()) :: [StopVisit.t()]
+  def stops_for_route(route_id, day, direction) do
+    ExploreRoute.stops_for_route(storage(), route_id, day, direction)
+  end
 
   @doc """
   Replaces the cached dataset with the GTFS files in `directory`.

@@ -1,0 +1,200 @@
+defmodule BusInfoGtfsWeb.RouteLive do
+  use BusInfoGtfsWeb, :live_view
+
+  alias BusInfoGtfs.Catalog
+
+  @days [
+    weekday: "Weekdays",
+    saturday: "Saturday",
+    holiday: "Public holidays"
+  ]
+
+  @default_day :weekday
+  @day_keys %{"weekday" => :weekday, "saturday" => :saturday, "holiday" => :holiday}
+
+  @impl true
+  def mount(%{"route_id" => route_id}, _session, socket) do
+    with {:ok, id} <- parse_route_id(route_id),
+         {:ok, route} <- Catalog.get_route(id) do
+      {from, to} = split_name(route.route_long_name)
+
+      {:ok,
+       socket
+       |> assign(:route, route)
+       |> assign(:route_from, from)
+       |> assign(:route_to, to)
+       |> assign(:day, @default_day)
+       |> assign(:direction, false)
+       |> assign(:days, @days)
+       |> assign(:page_title, route.route_long_name)}
+    else
+      _error ->
+        {:ok,
+         socket
+         |> put_flash(:error, "Route not found.")
+         |> push_navigate(to: ~p"/")}
+    end
+  end
+
+  @impl true
+  def handle_params(params, _uri, socket) do
+    {:noreply,
+     socket
+     |> assign(:day, parse_day(params["day"]))
+     |> assign_stops()}
+  end
+
+  defp assign_stops(socket) do
+    %{route: route, day: day, direction: direction} = socket.assigns
+    assign(socket, :stops, Catalog.stops_for_route(route.route_id, day, direction))
+  end
+
+  defp parse_route_id(route_id) do
+    case Integer.parse(route_id) do
+      {id, ""} -> {:ok, id}
+      _ -> :error
+    end
+  end
+
+  defp parse_day(day), do: Map.get(@day_keys, day, @default_day)
+
+  defp split_name(name) do
+    case String.split(name, " - ", parts: 2) do
+      [from, to] -> {from, to}
+      [single] -> {single, nil}
+    end
+  end
+
+  defp format_time(seconds) do
+    hours = div(seconds, 3600)
+    minutes = seconds |> rem(3600) |> div(60)
+
+    "#{pad(hours)}:#{pad(minutes)}"
+  end
+
+  defp pad(number), do: number |> Integer.to_string() |> String.pad_leading(2, "0")
+
+  @impl true
+  def render(assigns) do
+    ~H"""
+    <Layouts.app flash={@flash}>
+      <Layouts.app_header />
+
+      <main class="mx-auto w-full max-w-2xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
+        <div class="flex items-center gap-2">
+          <.link
+            id="back-link"
+            navigate={~p"/"}
+            aria-label="Back to all routes"
+            class="flex size-9 shrink-0 items-center justify-center rounded-full text-neutral-600 transition hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+          >
+            <.icon name="hero-arrow-left" class="size-5" />
+          </.link>
+
+          <h2
+            id="route-name"
+            class="flex min-w-0 flex-1 items-center gap-1.5 text-lg font-semibold tracking-tight sm:text-xl"
+          >
+            <span id="route-from" class="truncate">{@route_from}</span>
+            <.icon
+              :if={@route_to}
+              name="hero-arrow-right"
+              class="size-4 shrink-0 text-neutral-400"
+            />
+            <span :if={@route_to} id="route-to" class="truncate">{@route_to}</span>
+          </h2>
+
+          <button
+            type="button"
+            id="swap-direction"
+            disabled
+            aria-label="Swap direction (coming soon)"
+            title="Swap direction (coming soon)"
+            class="flex size-9 shrink-0 cursor-not-allowed items-center justify-center rounded-full text-neutral-300"
+          >
+            <.icon name="hero-arrows-right-left" class="size-5" />
+          </button>
+        </div>
+
+        <section aria-label="Stops along the route" class="mt-8">
+          <div class="-mx-4 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:px-6">
+            <div class="relative w-max">
+              <span
+                class="pointer-events-none absolute left-12 right-12 top-5 h-px bg-neutral-300"
+                aria-hidden="true"
+              />
+              <ol id="stop-timeline" class="relative flex items-start">
+                <li
+                  :for={visit <- @stops}
+                  id={"timeline-stop-#{visit.stop.stop_id}"}
+                  class="relative flex w-24 shrink-0 flex-col items-center"
+                >
+                  <span class="relative flex h-10 w-full items-center justify-center">
+                    <span
+                      class="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-neutral-300"
+                      aria-hidden="true"
+                    />
+                    <span class="relative size-3 rounded-full border-2 border-red-600 bg-white"></span>
+                  </span>
+                  <span
+                    class="mt-1 w-full truncate px-1 text-center text-[11px] leading-4 text-neutral-500"
+                    title={visit.stop.stop_name}
+                  >
+                    {visit.stop.stop_name}
+                  </span>
+                </li>
+              </ol>
+            </div>
+          </div>
+
+          <p :if={@stops == []} class="py-6 text-center text-sm text-neutral-500">
+            No stops available for this route.
+          </p>
+        </section>
+
+        <nav
+          id="day-selector"
+          aria-label="Service day"
+          class="mt-6 grid grid-cols-3 gap-1 rounded-xl bg-neutral-100 p-1"
+        >
+          <.link
+            :for={{key, label} <- @days}
+            id={"day-#{key}"}
+            patch={~p"/routes/#{@route.route_id}?day=#{key}"}
+            class={[
+              "rounded-lg px-2 py-2 text-center text-xs font-semibold transition sm:text-sm",
+              if(@day == key,
+                do: "bg-red-600 text-white shadow-sm",
+                else: "text-neutral-600 hover:bg-white hover:text-neutral-900"
+              )
+            ]}
+          >
+            {label}
+          </.link>
+        </nav>
+
+        <section aria-label="Arrival times" class="mt-6">
+          <ol
+            id="stop-times"
+            class="divide-y divide-neutral-200 overflow-hidden rounded-2xl border border-neutral-200"
+          >
+            <li
+              :for={visit <- @stops}
+              id={"stop-time-#{visit.stop.stop_id}"}
+              class="flex items-baseline gap-4 bg-white px-4 py-3"
+            >
+              <time class="w-14 shrink-0 text-sm font-semibold tabular-nums text-red-600">
+                {format_time(visit.stop_time.arrival_time)}
+              </time>
+              <span class="text-sm text-neutral-800">{visit.stop.stop_name}</span>
+            </li>
+            <li :if={@stops == []} class="bg-white px-4 py-10 text-center text-sm text-neutral-500">
+              No schedule available for this day.
+            </li>
+          </ol>
+        </section>
+      </main>
+    </Layouts.app>
+    """
+  end
+end
