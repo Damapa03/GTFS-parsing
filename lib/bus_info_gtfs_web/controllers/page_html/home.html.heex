@@ -1,28 +1,24 @@
 <Layouts.app flash={@flash}>
-  <header class="bg-red-600">
-    <div class="mx-auto w-full max-w-2xl px-4 py-6 sm:px-6 sm:py-8">
-      <h1 class="text-2xl font-semibold tracking-tight text-white text-balance sm:text-3xl">
-        Bilbao Bus
-      </h1>
-    </div>
-  </header>
+  <Layouts.app_header />
 
   <main class="mx-auto w-full max-w-2xl flex-1 px-4 py-8 sm:px-6 sm:py-10">
     <ul id="routes" class="space-y-3">
-      <li
-        :for={route <- @routes}
-        id={"route-#{route.route_id}"}
-        class={[
-          "group flex items-center justify-between gap-4 rounded-2xl border border-neutral-200 bg-white px-5 py-4",
-          "shadow-sm transition duration-200",
-          "hover:-translate-y-0.5 hover:border-red-300 hover:shadow-md"
-        ]}
-      >
-        <span class="font-medium leading-6 text-neutral-900">{route.route_long_name}</span>
-        <.icon
-          name="hero-chevron-right"
-          class="size-5 shrink-0 text-neutral-400 transition duration-200 group-hover:translate-x-0.5 group-hover:text-red-600"
-        />
+      <li :for={route <- @routes} id={"route-#{route.route_id}"}>
+        <.link
+          navigate={~p"/routes/#{route.route_id}"}
+          class={[
+            "group flex items-center justify-between gap-4 rounded-2xl border border-neutral-200 bg-white px-5 py-4",
+            "shadow-sm transition duration-200",
+            "hover:-translate-y-0.5 hover:border-red-300 hover:shadow-md",
+            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+          ]}
+        >
+          <span class="font-medium leading-6 text-neutral-900">{route.route_long_name}</span>
+          <.icon
+            name="hero-chevron-right"
+            class="size-5 shrink-0 text-neutral-400 transition duration-200 group-hover:translate-x-0.5 group-hover:text-red-600"
+          />
+        </.link>
       </li>
 
       <li
