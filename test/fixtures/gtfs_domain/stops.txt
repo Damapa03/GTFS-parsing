@@ -1,0 +1,7 @@
+stop_id,stop_name,stop_lat,stop_lon
+100,Depot,43.30,-2.98
+200,First,43.30,-2.98
+201,Second,43.30,-2.98
+202,Third,43.30,-2.98
+203,Fourth,43.30,-2.98
+204,Fifth,43.30,-2.98

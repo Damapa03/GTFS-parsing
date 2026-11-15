@@ -1,0 +1,5 @@
+trip_id,arrival_time,departure_time,stop_id,stop_sequence,stop_headsign,pickup_type,drop_off_type,shape_dist_traveled
+OINFL1_010101_1,06:40:00,06:40:00,100,1,Altos Hornos,0,0,0
+OINFL1_010101_1,07:05:30,07:05:30,200,2,Altos Hornos,0,0,10
+OINFL1_010101_1,not-a-time,07:06:00,300,3,Altos Hornos,0,0,20
+OINFL1_010101_1,25:10:00,25:10:00,400,4,Altos Hornos,0,0,30

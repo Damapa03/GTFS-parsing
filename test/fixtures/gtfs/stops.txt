@@ -1,0 +1,5 @@
+stop_id,stop_code,stop_name,stop_lat,stop_lon,zone_id
+100,100,Polideportivo Lasesarre,43.3020520379822,-2.99096700198891,
+200,200,Bagatza 3,43.301035041349,-2.9938549962222,
+400,400,Midnight,43.29,-2.97,
+bad,x,Broken stop,43.3,-2.9,

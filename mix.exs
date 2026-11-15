@@ -40,6 +40,7 @@ defmodule BusInfoGtfs.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:nimble_csv, "~> 1.3"},
       {:phoenix, "~> 1.8.16"},
       {:phoenix_ecto, "~> 4.5"},
       {:ecto_sql, "~> 3.13"},
