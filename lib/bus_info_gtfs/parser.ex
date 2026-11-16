@@ -17,6 +17,10 @@ defmodule BusInfoGtfs.Parser do
   The `frequency` of a trip is derived from its `trip_id`: the text before the
   first `_`, without the `OIN` prefix, must start with `F`, `L` or `S`.
 
+  GTFS defines `route_id`, `shape_id` and `stop_id` as strings, but this feed
+  uses numeric identifiers, so they are cast to integers. Rows with a
+  non-numeric identifier are skipped like any other invalid row.
+
   This module performs no persistence: `BusInfoGtfs.Ingest` writes the
   result through a `BusInfoGtfs.Storage` implementation.
   """

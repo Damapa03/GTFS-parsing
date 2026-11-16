@@ -28,12 +28,23 @@ defmodule BusInfoGtfs.Storage do
   @doc "Returns every route ordered by `route_id`."
   @callback routes(state()) :: [Route.t()]
 
+  @doc "Returns the route with `route_id`."
+  @callback route(state(), route_id :: integer()) :: {:ok, Route.t()} | {:error, :not_found}
+
+  @doc "Returns the trips of a route (source order)."
+  @callback trips(state(), route_id :: integer()) :: [Trip.t()]
+
   @doc "Returns the first trip of a route (source order)."
   @callback first_trip(state(), route_id :: integer()) ::
               {:ok, Trip.t()} | {:error, :no_trip}
 
   @doc "Returns the stops of a trip ordered by `stop_sequence`."
   @callback stops_for_trip(state(), trip_id :: String.t()) :: [StopVisit.t()]
+
+  @doc """
+  Returns the stop visits of `trip_ids` ordered by trip and `stop_sequence`.
+  """
+  @callback stop_visits_for_trips(state(), trip_ids :: [String.t()]) :: [StopVisit.t()]
 
   @spec replace_all(storage(), tables()) :: {:ok, storage()} | {:error, term()}
   def replace_all({module, state}, tables) do
@@ -45,9 +56,20 @@ defmodule BusInfoGtfs.Storage do
   @spec routes(storage()) :: [Route.t()]
   def routes({module, state}), do: module.routes(state)
 
+  @spec route(storage(), integer()) :: {:ok, Route.t()} | {:error, :not_found}
+  def route({module, state}, route_id), do: module.route(state, route_id)
+
+  @spec trips(storage(), integer()) :: [Trip.t()]
+  def trips({module, state}, route_id), do: module.trips(state, route_id)
+
   @spec first_trip(storage(), integer()) :: {:ok, Trip.t()} | {:error, :no_trip}
   def first_trip({module, state}, route_id), do: module.first_trip(state, route_id)
 
   @spec stops_for_trip(storage(), String.t()) :: [StopVisit.t()]
   def stops_for_trip({module, state}, trip_id), do: module.stops_for_trip(state, trip_id)
+
+  @spec stop_visits_for_trips(storage(), [String.t()]) :: [StopVisit.t()]
+  def stop_visits_for_trips({module, state}, trip_ids) do
+    module.stop_visits_for_trips(state, trip_ids)
+  end
 end

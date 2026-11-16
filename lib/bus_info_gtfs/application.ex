@@ -12,6 +12,7 @@ defmodule BusInfoGtfs.Application do
       BusInfoGtfs.Repo,
       {Ecto.Migrator,
        repos: Application.fetch_env!(:bus_info_gtfs, :ecto_repos), skip: skip_migrations?()},
+      BusInfoGtfs.Bootstrap,
       {DNSCluster, query: Application.get_env(:bus_info_gtfs, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: BusInfoGtfs.PubSub},
       # Start a worker by calling: BusInfoGtfs.Worker.start_link(arg)

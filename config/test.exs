@@ -8,10 +8,12 @@ import Config
 config :bus_info_gtfs, BusInfoGtfs.Repo,
   database: Path.expand("../bus_info_gtfs_test.db", __DIR__),
   pool_size: 5,
+  # Avoid transient "database is locked" errors when tests and migrations run.
+  busy_timeout: 5_000,
   pool: Ecto.Adapters.SQL.Sandbox
 
-# Use the small fixtures instead of the real GTFS dataset in tests.
-config :bus_info_gtfs, gtfs_dir: Path.expand("../test/fixtures/gtfs", __DIR__)
+# Use the small web fixtures instead of the real GTFS dataset in tests.
+config :bus_info_gtfs, gtfs_dir: Path.expand("../test/fixtures/gtfs_web", __DIR__)
 
 # We don't run a server during test. If one is required,
 # you can enable the server option below.

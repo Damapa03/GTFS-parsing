@@ -4,6 +4,8 @@ import Config
 config :bus_info_gtfs, BusInfoGtfs.Repo,
   database: Path.expand("../bus_info_gtfs_dev.db", __DIR__),
   pool_size: 5,
+  # Give concurrent writers (ingestion, dev reloads) more room before failing.
+  busy_timeout: 5_000,
   stacktrace: true,
   show_sensitive_data_on_connection_error: true
 
