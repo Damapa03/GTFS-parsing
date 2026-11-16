@@ -140,7 +140,10 @@ defmodule BusInfoGtfsWeb.RouteLiveTest do
     test "lists every trip time for each stop", %{conn: conn} do
       {:ok, view, _html} = live(conn, ~p"/routes/1")
 
+      assert has_element?(view, "#stop-schedule-scroll[role='region'].overflow-x-auto")
       assert has_element?(view, "#stop-schedule")
+      assert has_element?(view, "#stop-time-100 .stop-name.sticky.left-0.w-48")
+      assert has_element?(view, "#stop-time-100 ul li time", "06:40")
       assert has_element?(view, "#stop-time-100 time", "06:40")
       assert has_element?(view, "#stop-time-100 time", "07:00")
       assert has_element?(view, "#stop-time-200 time", "07:10")
