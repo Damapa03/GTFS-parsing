@@ -2,6 +2,7 @@ defmodule BusInfoGtfsWeb.RouteLive do
   use BusInfoGtfsWeb, :live_view
 
   alias BusInfoGtfs.Catalog
+  alias BusInfoGtfs.Services.ExploreRoute
 
   @days [
     weekday: "Weekdays",
@@ -25,6 +26,7 @@ defmodule BusInfoGtfsWeb.RouteLive do
        |> assign(:route_to, to)
        |> assign(:day, @default_day)
        |> assign(:direction, false)
+       |> assign(:selected_stop_ids, [])
        |> assign(:days, @days)
        |> assign(:page_title, route.route_long_name)}
     else
@@ -40,8 +42,32 @@ defmodule BusInfoGtfsWeb.RouteLive do
   def handle_params(params, _uri, socket) do
     {:noreply,
      socket
+     |> assign(:selected_stop_ids, [])
      |> assign(:day, parse_day(params["day"]))
      |> assign_schedule()}
+  end
+
+  @impl true
+  def handle_event("select_stop", %{"stop_id" => stop_id}, socket) do
+    schedule = socket.assigns.schedule
+
+    case Enum.find_index(schedule, &(to_string(&1.stop.stop_id) == stop_id)) do
+      nil ->
+        {:noreply, socket}
+
+      index ->
+        selected_stop = Enum.at(schedule, index)
+
+        selected_stop_ids =
+          if List.first(socket.assigns.selected_stop_ids) == selected_stop.stop.stop_id do
+            []
+          else
+            [selected_stop | ExploreRoute.next_stops(schedule, index)]
+            |> Enum.map(& &1.stop.stop_id)
+          end
+
+        {:noreply, assign(socket, :selected_stop_ids, selected_stop_ids)}
+    end
   end
 
   defp assign_schedule(socket) do
@@ -129,19 +155,41 @@ defmodule BusInfoGtfsWeb.RouteLive do
                   id={"timeline-stop-#{entry.stop.stop_id}"}
                   class="relative flex w-24 shrink-0 flex-col items-center"
                 >
-                  <span class="relative flex h-10 w-full items-center justify-center">
-                    <span
-                      class="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-neutral-300"
-                      aria-hidden="true"
-                    />
-                    <span class="relative size-3 rounded-full border-2 border-red-600 bg-white"></span>
-                  </span>
-                  <span
-                    class="mt-1 w-full truncate px-1 text-center text-[11px] leading-4 text-neutral-500"
-                    title={entry.stop.stop_name}
+                  <button
+                    type="button"
+                    phx-click="select_stop"
+                    phx-value-stop_id={entry.stop.stop_id}
+                    aria-label={"Highlight #{entry.stop.stop_name} and the following stops"}
+                    aria-pressed={to_string(entry.stop.stop_id in @selected_stop_ids)}
+                    class={[
+                      "group flex w-full flex-col items-center rounded-lg px-1 pb-1 text-center transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600",
+                      entry.stop.stop_id in @selected_stop_ids && "bg-red-50"
+                    ]}
                   >
-                    {entry.stop.stop_name}
-                  </span>
+                    <span class="relative flex h-10 w-full items-center justify-center">
+                      <span
+                        class="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-neutral-300"
+                        aria-hidden="true"
+                      />
+                      <span class={[
+                        "relative size-3 rounded-full border-2 border-red-600 bg-white transition",
+                        entry.stop.stop_id in @selected_stop_ids &&
+                          "scale-125 bg-red-600 ring-4 ring-red-100"
+                      ]} />
+                    </span>
+
+                    <span
+                      class={[
+                        "mt-1 w-full truncate px-1 text-[11px] leading-4",
+                        entry.stop.stop_id in @selected_stop_ids &&
+                          "font-semibold text-red-700",
+                        entry.stop.stop_id not in @selected_stop_ids && "text-neutral-500"
+                      ]}
+                      title={entry.stop.stop_name}
+                    >
+                      {entry.stop.stop_name}
+                    </span>
+                  </button>
                 </li>
               </ol>
             </div>
@@ -181,7 +229,10 @@ defmodule BusInfoGtfsWeb.RouteLive do
             <li
               :for={entry <- @schedule}
               id={"stop-time-#{entry.stop.stop_id}"}
-              class="flex flex-col gap-3 p-3 sm:flex-row sm:items-start"
+              class={[
+                "flex flex-col gap-3 p-3 sm:flex-row sm:items-start",
+                entry.stop.stop_id in @selected_stop_ids && "bg-red-50"
+              ]}
             >
               <span class="stop-name flex shrink-0 items-center rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white sm:w-48">
                 {entry.stop.stop_name}

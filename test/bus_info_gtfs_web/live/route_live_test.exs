@@ -100,6 +100,43 @@ defmodule BusInfoGtfsWeb.RouteLiveTest do
       assert has_element?(view, "#timeline-stop-300", "Muelle de La Benedicta")
     end
 
+    test "highlights the selected stop and up to three following stops", %{conn: conn} do
+      {:ok, view, _html} = live(conn, ~p"/routes/1")
+
+      view |> element("#timeline-stop-100 button") |> render_click()
+
+      assert has_element?(view, "#timeline-stop-100 button[aria-pressed='true'].bg-red-50")
+      assert has_element?(view, "#timeline-stop-200 button[aria-pressed='true'].bg-red-50")
+      assert has_element?(view, "#timeline-stop-300 button[aria-pressed='true'].bg-red-50")
+      assert has_element?(view, "#stop-time-100.bg-red-50")
+      assert has_element?(view, "#stop-time-200.bg-red-50")
+      assert has_element?(view, "#stop-time-300.bg-red-50")
+
+      view |> element("#timeline-stop-200 button") |> render_click()
+
+      refute has_element?(view, "#timeline-stop-100 button[aria-pressed='true']")
+      assert has_element?(view, "#timeline-stop-200 button[aria-pressed='true']")
+      assert has_element?(view, "#timeline-stop-300 button[aria-pressed='true']")
+      refute has_element?(view, "#stop-time-100.bg-red-50")
+      assert has_element?(view, "#stop-time-200.bg-red-50")
+      assert has_element?(view, "#stop-time-300.bg-red-50")
+
+      view |> element("#timeline-stop-200 button") |> render_click()
+
+      refute has_element?(view, "#timeline-stop-100 button[aria-pressed='true']")
+      refute has_element?(view, "#timeline-stop-200 button[aria-pressed='true']")
+      refute has_element?(view, "#timeline-stop-300 button[aria-pressed='true']")
+      refute has_element?(view, "#stop-time-100.bg-red-50")
+      refute has_element?(view, "#stop-time-200.bg-red-50")
+      refute has_element?(view, "#stop-time-300.bg-red-50")
+
+      view |> element("#timeline-stop-300 button") |> render_click()
+
+      assert has_element?(view, "#timeline-stop-300 button[aria-pressed='true']")
+      assert has_element?(view, "#stop-time-300.bg-red-50")
+      refute has_element?(view, "#stop-time-200.bg-red-50")
+    end
+
     test "lists every trip time for each stop", %{conn: conn} do
       {:ok, view, _html} = live(conn, ~p"/routes/1")
 
