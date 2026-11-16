@@ -10,7 +10,7 @@ defmodule BusInfoGtfs.Catalog do
 
   require Logger
 
-  alias BusInfoGtfs.Domain.{Route, StopVisit}
+  alias BusInfoGtfs.Gtfs.{Route, StopVisit}
   alias BusInfoGtfs.Ingest
   alias BusInfoGtfs.Services.ExploreRoute
   alias BusInfoGtfs.Storage.InMemory

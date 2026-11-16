@@ -7,12 +7,12 @@ defmodule BusInfoGtfs.Services.ExploreRoute do
   changing the use cases.
   """
 
-  alias BusInfoGtfs.Domain.{Route, StopVisit, Trip}
+  alias BusInfoGtfs.Gtfs.{Route, StopVisit, Trip}
   alias BusInfoGtfs.Storage
 
   @type day :: :weekday | :saturday | :holiday
 
-  # GTFS frequency code derived from the trip id, see `BusInfoGtfs.Domain.Trip`.
+  # GTFS frequency code derived from the trip id, see `BusInfoGtfs.Gtfs.Trip`.
   @day_frequencies %{weekday: "L", saturday: "S", holiday: "F"}
 
   @doc "Lists all routes ordered by `route_id`."

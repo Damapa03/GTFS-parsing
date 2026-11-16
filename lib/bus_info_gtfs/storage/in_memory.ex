@@ -8,7 +8,7 @@ defmodule BusInfoGtfs.Storage.InMemory do
 
   @behaviour BusInfoGtfs.Storage
 
-  alias BusInfoGtfs.Domain.StopVisit
+  alias BusInfoGtfs.Gtfs.StopVisit
 
   defstruct routes: [],
             shapes: [],

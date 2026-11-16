@@ -8,7 +8,7 @@ defmodule BusInfoGtfs.Storage do
   A `storage` value is the tuple `{implementation_module, state}`.
   """
 
-  alias BusInfoGtfs.Domain.{Route, Shape, Stop, StopTime, StopVisit, Trip}
+  alias BusInfoGtfs.Gtfs.{Route, Shape, Stop, StopTime, StopVisit, Trip}
 
   @type state :: term()
 

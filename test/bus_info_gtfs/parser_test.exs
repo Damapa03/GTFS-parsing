@@ -3,7 +3,7 @@ defmodule BusInfoGtfs.ParserTest do
 
   import ExUnit.CaptureLog
 
-  alias BusInfoGtfs.Domain.{Route, Shape, ShapePoint, Stop, StopTime, Trip}
+  alias BusInfoGtfs.Gtfs.{Route, Shape, ShapePoint, Stop, StopTime, Trip}
 
   @fixtures Path.expand("../fixtures/gtfs", __DIR__)
 
@@ -154,11 +154,13 @@ defmodule BusInfoGtfs.ParserTest do
                shape_id: 10,
                points: [
                  %ShapePoint{
+                   shape_id: 10,
                    shape_pt_sequence: 1,
                    shape_lat: 43.3012097735352,
                    shape_lon: -2.98199621781057
                  },
                  %ShapePoint{
+                   shape_id: 10,
                    shape_pt_sequence: 2,
                    shape_lat: 43.3012911196583,
                    shape_lon: -2.98204311099738
@@ -169,6 +171,7 @@ defmodule BusInfoGtfs.ParserTest do
                shape_id: 20,
                points: [
                  %ShapePoint{
+                   shape_id: 20,
                    shape_pt_sequence: 1,
                    shape_lat: 43.3020520379822,
                    shape_lon: -2.99096700198891

@@ -1,4 +1,4 @@
-defmodule BusInfoGtfs.Domain.StopTime do
+defmodule BusInfoGtfs.Gtfs.StopTime do
   @moduledoc """
   A GTFS stop time (`stop_times.txt`).
 
@@ -6,14 +6,23 @@ defmodule BusInfoGtfs.Domain.StopTime do
   24:00 (e.g. `25:10:00`) keep working.
   """
 
-  @enforce_keys [:trip_id, :stop_id, :stop_sequence, :arrival_time]
-  defstruct [:trip_id, :stop_id, :stop_sequence, :arrival_time]
+  use Ecto.Schema
+
+  @primary_key false
+
+  schema "stop_times" do
+    belongs_to :trip, BusInfoGtfs.Gtfs.Trip, references: :trip_id, type: :string
+    belongs_to :stop, BusInfoGtfs.Gtfs.Stop, references: :stop_id, type: :id
+
+    field :stop_sequence, :integer
+    field :arrival_time, :integer
+  end
 
   @type t :: %__MODULE__{
-          trip_id: String.t(),
-          stop_id: integer(),
-          stop_sequence: integer(),
-          arrival_time: non_neg_integer()
+          trip_id: String.t() | nil,
+          stop_id: integer() | nil,
+          stop_sequence: integer() | nil,
+          arrival_time: non_neg_integer() | nil
         }
 
   @doc """
