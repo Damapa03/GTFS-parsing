@@ -66,4 +66,17 @@ defmodule BusInfoGtfs.FakeStorage do
       %StopVisit{stop: Map.fetch!(stops_by_id, stop_time.stop_id), stop_time: stop_time}
     end)
   end
+
+  @impl true
+  def stop_visits_for_trips(state, trip_ids) do
+    trip_ids = MapSet.new(trip_ids)
+    stops_by_id = Map.new(state.stops, &{&1.stop_id, &1})
+
+    state.stop_times
+    |> Enum.filter(&MapSet.member?(trip_ids, &1.trip_id))
+    |> Enum.sort_by(&{&1.trip_id, &1.stop_sequence})
+    |> Enum.map(fn stop_time ->
+      %StopVisit{stop: Map.fetch!(stops_by_id, stop_time.stop_id), stop_time: stop_time}
+    end)
+  end
 end

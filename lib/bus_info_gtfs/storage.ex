@@ -41,6 +41,11 @@ defmodule BusInfoGtfs.Storage do
   @doc "Returns the stops of a trip ordered by `stop_sequence`."
   @callback stops_for_trip(state(), trip_id :: String.t()) :: [StopVisit.t()]
 
+  @doc """
+  Returns the stop visits of `trip_ids` ordered by trip and `stop_sequence`.
+  """
+  @callback stop_visits_for_trips(state(), trip_ids :: [String.t()]) :: [StopVisit.t()]
+
   @spec replace_all(storage(), tables()) :: {:ok, storage()} | {:error, term()}
   def replace_all({module, state}, tables) do
     with {:ok, state} <- module.replace_all(state, tables) do
@@ -62,4 +67,9 @@ defmodule BusInfoGtfs.Storage do
 
   @spec stops_for_trip(storage(), String.t()) :: [StopVisit.t()]
   def stops_for_trip({module, state}, trip_id), do: module.stops_for_trip(state, trip_id)
+
+  @spec stop_visits_for_trips(storage(), [String.t()]) :: [StopVisit.t()]
+  def stop_visits_for_trips({module, state}, trip_ids) do
+    module.stop_visits_for_trips(state, trip_ids)
+  end
 end

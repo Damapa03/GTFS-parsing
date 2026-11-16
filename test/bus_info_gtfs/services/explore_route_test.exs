@@ -2,7 +2,7 @@ defmodule BusInfoGtfs.Services.ExploreRouteTest do
   use ExUnit.Case, async: true
 
   alias BusInfoGtfs.{FakeStorage, Parser, Storage}
-  alias BusInfoGtfs.Gtfs.Trip
+  alias BusInfoGtfs.Gtfs.{Stop, StopSchedule, StopTime, Trip}
   alias BusInfoGtfs.Services.ExploreRoute
 
   @fixtures Path.expand("../../fixtures/gtfs_domain", __DIR__)
@@ -67,6 +67,122 @@ defmodule BusInfoGtfs.Services.ExploreRouteTest do
                %{stop_time: %{arrival_time: 25_830}},
                %{stop_time: %{arrival_time: 26_400}}
              ] = ExploreRoute.stops_for_route(storage, 1, :weekday, false)
+    end
+  end
+
+  describe "schedule_for_route/4" do
+    test "groups every trip of the day and direction by stop" do
+      storage = storage!(@web_fixtures)
+
+      assert [
+               %StopSchedule{
+                 stop: %{stop_id: 100},
+                 times: [
+                   %StopTime{arrival_time: 24_000, trip_id: "OINLL1_010101_1"},
+                   %StopTime{arrival_time: 25_200, trip_id: "OINLL1_010101_2"}
+                 ]
+               },
+               %StopSchedule{
+                 stop: %{stop_id: 200},
+                 times: [%StopTime{arrival_time: 25_830, trip_id: "OINLL1_010101_2"}]
+               },
+               %StopSchedule{
+                 stop: %{stop_id: 300},
+                 times: [%StopTime{arrival_time: 26_400, trip_id: "OINLL1_010101_2"}]
+               }
+             ] = ExploreRoute.schedule_for_route(storage, 1, :weekday, false)
+    end
+
+    test "ignores trips from other days and directions" do
+      storage = storage!(@web_fixtures)
+
+      assert [
+               %StopSchedule{
+                 stop: %{stop_id: 300},
+                 times: [%StopTime{arrival_time: 27_000, trip_id: "OINLL2_010201_2"}]
+               },
+               %StopSchedule{
+                 stop: %{stop_id: 200},
+                 times: [%StopTime{arrival_time: 27_900, trip_id: "OINLL2_010201_2"}]
+               },
+               %StopSchedule{
+                 stop: %{stop_id: 100},
+                 times: [%StopTime{arrival_time: 28_800, trip_id: "OINLL2_010201_2"}]
+               }
+             ] = ExploreRoute.schedule_for_route(storage, 2, :weekday, true)
+    end
+
+    test "includes single-stop trips", %{storage: storage} do
+      assert [
+               %StopSchedule{
+                 stop: %Stop{stop_name: "Depot"},
+                 times: [%StopTime{arrival_time: 24_000, trip_id: "OINFL1_010101_1"}]
+               }
+             ] = ExploreRoute.schedule_for_route(storage, 1, :holiday, false)
+    end
+
+    test "returns an empty schedule when no trip matches", %{storage: storage} do
+      assert [] = ExploreRoute.schedule_for_route(storage, 1, :weekday, false)
+    end
+
+    test "keeps every visit when a trip repeats a stop" do
+      storage =
+        {FakeStorage,
+         FakeStorage.new(
+           trips: [
+             %Trip{trip_id: "loop", route_id: 1, frequency: "L", direction_id: false}
+           ],
+           stops: [
+             %Stop{stop_id: 1, stop_name: "Start"},
+             %Stop{stop_id: 2, stop_name: "Middle"}
+           ],
+           stop_times: [
+             %StopTime{trip_id: "loop", stop_id: 1, stop_sequence: 1, arrival_time: 100},
+             %StopTime{trip_id: "loop", stop_id: 2, stop_sequence: 2, arrival_time: 200},
+             %StopTime{trip_id: "loop", stop_id: 1, stop_sequence: 3, arrival_time: 300}
+           ]
+         )}
+
+      assert [
+               %StopSchedule{
+                 stop: %{stop_id: 1},
+                 times: [
+                   %StopTime{arrival_time: 100},
+                   %StopTime{arrival_time: 300}
+                 ]
+               },
+               %StopSchedule{
+                 stop: %{stop_id: 2},
+                 times: [%StopTime{arrival_time: 200}]
+               }
+             ] = ExploreRoute.schedule_for_route(storage, 1, :weekday, false)
+    end
+
+    test "appends stops that only appear on other trips" do
+      storage =
+        {FakeStorage,
+         FakeStorage.new(
+           trips: [
+             %Trip{trip_id: "a", route_id: 1, frequency: "L", direction_id: false},
+             %Trip{trip_id: "b", route_id: 1, frequency: "L", direction_id: false}
+           ],
+           stops: [
+             %Stop{stop_id: 1, stop_name: "One"},
+             %Stop{stop_id: 2, stop_name: "Two"},
+             %Stop{stop_id: 3, stop_name: "Three"}
+           ],
+           stop_times: [
+             %StopTime{trip_id: "a", stop_id: 1, stop_sequence: 1, arrival_time: 100},
+             %StopTime{trip_id: "a", stop_id: 2, stop_sequence: 2, arrival_time: 200},
+             %StopTime{trip_id: "b", stop_id: 3, stop_sequence: 1, arrival_time: 300}
+           ]
+         )}
+
+      assert [
+               %StopSchedule{stop: %{stop_id: 1}},
+               %StopSchedule{stop: %{stop_id: 2}},
+               %StopSchedule{stop: %{stop_id: 3}}
+             ] = ExploreRoute.schedule_for_route(storage, 1, :weekday, false)
     end
   end
 

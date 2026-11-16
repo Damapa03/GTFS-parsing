@@ -74,6 +74,20 @@ defmodule BusInfoGtfs.Storage.Ecto do
     |> Enum.map(fn {stop, stop_time} -> %StopVisit{stop: stop, stop_time: stop_time} end)
   end
 
+  @impl true
+  def stop_visits_for_trips(_repo, []), do: []
+
+  def stop_visits_for_trips(repo, trip_ids) do
+    from(stop_time in StopTime,
+      join: stop in assoc(stop_time, :stop),
+      where: stop_time.trip_id in ^trip_ids,
+      order_by: [asc: stop_time.trip_id, asc: stop_time.stop_sequence],
+      select: {stop, stop_time}
+    )
+    |> repo.all()
+    |> Enum.map(fn {stop, stop_time} -> %StopVisit{stop: stop, stop_time: stop_time} end)
+  end
+
   defp do_replace_all(repo, tables) do
     delete_all(repo)
 

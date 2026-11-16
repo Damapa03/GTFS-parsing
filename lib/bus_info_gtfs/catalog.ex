@@ -26,5 +26,13 @@ defmodule BusInfoGtfs.Catalog do
     ExploreRoute.stops_for_route(storage(), route_id, day, direction)
   end
 
+  @doc "Returns the timetable of a route for a service day and direction."
+  @spec schedule_for_route(integer(), day(), boolean()) :: [
+          BusInfoGtfs.Gtfs.StopSchedule.t()
+        ]
+  def schedule_for_route(route_id, day, direction) do
+    ExploreRoute.schedule_for_route(storage(), route_id, day, direction)
+  end
+
   defp storage, do: {Ecto, Repo}
 end

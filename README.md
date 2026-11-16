@@ -92,7 +92,9 @@ release command rather than from the running release image.
 ## Data model
 
 * Ecto schemas live under `BusInfoGtfs.Gtfs.*` (routes, shapes, stops, trips,
-  stop times). `StopVisit` is a read model joining a stop with its stop time.
+  stop times). `StopVisit` joins a stop with its stop time and `StopSchedule`
+  groups every arrival time of a stop, so the web layer can show all trips of a
+  day at once.
 * `BusInfoGtfs.Storage` is the persistence contract and
   `BusInfoGtfs.Storage.Ecto` is the SQLite implementation. `BusInfoGtfs.Catalog`
   is the thin read API used by the web layer.

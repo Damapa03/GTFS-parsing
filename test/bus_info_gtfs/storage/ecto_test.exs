@@ -2,7 +2,7 @@ defmodule BusInfoGtfs.Storage.EctoTest do
   use BusInfoGtfs.DataCase, async: false
 
   alias BusInfoGtfs.{Parser, Storage}
-  alias BusInfoGtfs.Gtfs.{Route, Shape, ShapePoint, Stop, StopTime, Trip}
+  alias BusInfoGtfs.Gtfs.{Route, Shape, ShapePoint, Stop, StopTime, StopVisit, Trip}
   alias BusInfoGtfs.Storage.Ecto
 
   @fixtures Path.expand("../../fixtures/gtfs", __DIR__)
@@ -94,5 +94,47 @@ defmodule BusInfoGtfs.Storage.EctoTest do
 
       assert [] = Storage.stops_for_trip(storage, "unknown")
     end
+
+    test "stop_visits_for_trips/2 returns the visits of a trip", %{storage: storage} do
+      assert [
+               %StopVisit{
+                 stop: %Stop{stop_id: 100},
+                 stop_time: %StopTime{stop_sequence: 1}
+               },
+               %StopVisit{
+                 stop: %Stop{stop_id: 200},
+                 stop_time: %StopTime{stop_sequence: 2}
+               },
+               %StopVisit{
+                 stop: %Stop{stop_id: 400},
+                 stop_time: %StopTime{stop_sequence: 4}
+               }
+             ] = Storage.stop_visits_for_trips(storage, ["OINFL1_010101_1"])
+    end
+
+    test "stop_visits_for_trips/2 returns an empty list without matching trips", %{
+      storage: storage
+    } do
+      assert [] = Storage.stop_visits_for_trips(storage, [])
+      assert [] = Storage.stop_visits_for_trips(storage, ["unknown"])
+    end
+  end
+
+  test "stop_visits_for_trips/2 returns several trips ordered by trip and sequence" do
+    fixtures = Path.expand("../../fixtures/gtfs_domain", __DIR__)
+    assert {:ok, tables} = Parser.parse_directory(fixtures)
+    assert {:ok, storage} = Storage.replace_all({Ecto, Repo}, tables)
+
+    visits =
+      Storage.stop_visits_for_trips(storage, ["OINSL2_010201_1", "OINFL1_010101_1"])
+
+    assert Enum.map(visits, &{&1.stop_time.trip_id, &1.stop_time.stop_sequence}) == [
+             {"OINFL1_010101_1", 1},
+             {"OINSL2_010201_1", 1},
+             {"OINSL2_010201_1", 2},
+             {"OINSL2_010201_1", 3},
+             {"OINSL2_010201_1", 4},
+             {"OINSL2_010201_1", 5}
+           ]
   end
 end
