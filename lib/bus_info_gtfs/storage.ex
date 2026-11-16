@@ -28,6 +28,9 @@ defmodule BusInfoGtfs.Storage do
   @doc "Returns every route ordered by `route_id`."
   @callback routes(state()) :: [Route.t()]
 
+  @doc "Returns the route with `route_id`."
+  @callback route(state(), route_id :: integer()) :: {:ok, Route.t()} | {:error, :not_found}
+
   @doc "Returns the trips of a route (source order)."
   @callback trips(state(), route_id :: integer()) :: [Trip.t()]
 
@@ -47,6 +50,9 @@ defmodule BusInfoGtfs.Storage do
 
   @spec routes(storage()) :: [Route.t()]
   def routes({module, state}), do: module.routes(state)
+
+  @spec route(storage(), integer()) :: {:ok, Route.t()} | {:error, :not_found}
+  def route({module, state}, route_id), do: module.route(state, route_id)
 
   @spec trips(storage(), integer()) :: [Trip.t()]
   def trips({module, state}, route_id), do: module.trips(state, route_id)

@@ -11,6 +11,24 @@ defmodule BusInfoGtfs.TestSupport do
     directory
   end
 
+  @doc """
+  Ingests a GTFS directory into the application repo, raising on failure.
+
+  Defaults to the configured `:gtfs_dir`. Call it from a test's `setup` block
+  so the sandbox owner has checked out the connection first.
+  """
+  def seed_gtfs!(directory \\ nil) do
+    directory = directory || Application.get_env(:bus_info_gtfs, :gtfs_dir)
+
+    case BusInfoGtfs.Ingest.ingest(
+           directory,
+           {BusInfoGtfs.Storage.Ecto, BusInfoGtfs.Repo}
+         ) do
+      {:ok, _storage, _counts} -> :ok
+      {:error, reason} -> raise "could not ingest #{directory}: #{inspect(reason)}"
+    end
+  end
+
   @doc "Runs `sql` against the application repo and returns the raw rows."
   def query!(sql, params \\ []) do
     %{rows: rows} = BusInfoGtfs.Repo.query!(sql, params)

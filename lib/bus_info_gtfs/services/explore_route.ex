@@ -21,12 +21,7 @@ defmodule BusInfoGtfs.Services.ExploreRoute do
 
   @doc "Returns the route with `route_id`."
   @spec route(Storage.storage(), integer()) :: {:ok, Route.t()} | {:error, :not_found}
-  def route(storage, route_id) do
-    case Enum.find(Storage.routes(storage), &(&1.route_id == route_id)) do
-      nil -> {:error, :not_found}
-      route -> {:ok, route}
-    end
-  end
+  def route(storage, route_id), do: Storage.route(storage, route_id)
 
   @doc "Returns the GTFS frequency code for a service day."
   @spec frequency_for_day(day()) :: Trip.frequency()

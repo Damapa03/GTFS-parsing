@@ -3,6 +3,11 @@ defmodule BusInfoGtfsWeb.RouteLiveTest do
 
   import Phoenix.LiveViewTest
 
+  setup do
+    BusInfoGtfs.TestSupport.seed_gtfs!()
+    :ok
+  end
+
   describe "route header" do
     test "splits a two part name with a direction arrow", %{conn: conn} do
       {:ok, view, _html} = live(conn, ~p"/routes/2")

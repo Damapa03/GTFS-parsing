@@ -1,6 +1,11 @@
 defmodule BusInfoGtfsWeb.PageControllerTest do
   use BusInfoGtfsWeb.ConnCase
 
+  setup do
+    BusInfoGtfs.TestSupport.seed_gtfs!()
+    :ok
+  end
+
   @tag capture_log: true
   test "GET / lists the bus routes", %{conn: conn} do
     document =

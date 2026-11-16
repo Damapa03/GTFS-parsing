@@ -37,6 +37,14 @@ defmodule BusInfoGtfs.FakeStorage do
   def routes(state), do: Enum.sort_by(state.routes, & &1.route_id)
 
   @impl true
+  def route(state, route_id) do
+    case Enum.find(state.routes, &(&1.route_id == route_id)) do
+      nil -> {:error, :not_found}
+      route -> {:ok, route}
+    end
+  end
+
+  @impl true
   def trips(state, route_id), do: Enum.filter(state.trips, &(&1.route_id == route_id))
 
   @impl true
