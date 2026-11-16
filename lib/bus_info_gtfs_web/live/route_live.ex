@@ -240,41 +240,57 @@ defmodule BusInfoGtfsWeb.RouteLive do
         </nav>
 
         <section aria-label="Stop timetable" class="mt-6">
-          <div
-            id="stop-schedule-scroll"
-            role="region"
-            aria-label="Stop timetable, scroll horizontally to see all times"
-            tabindex="0"
-            class="overflow-x-auto overscroll-x-contain rounded-2xl border border-neutral-200 bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
-          >
-            <ol id="stop-schedule" class="w-max min-w-full divide-y divide-neutral-200">
+          <div class="flex overflow-hidden rounded-2xl border border-neutral-200 bg-white">
+            <ol id="stop-schedule-names" class="w-48 shrink-0 divide-y divide-neutral-200">
               <li
                 :for={entry <- @schedule}
-                id={"stop-time-#{entry.stop.stop_id}"}
+                id={"stop-name-#{entry.stop.stop_id}"}
                 class={[
-                  "flex w-max min-w-full items-center gap-3 p-3",
+                  "flex h-20 items-center px-3",
                   entry.stop.stop_id in @selected_stop_ids && "bg-red-50"
                 ]}
               >
-                <span class="stop-name sticky left-0 z-10 flex w-48 shrink-0 items-center rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white">
+                <span
+                  class="stop-name line-clamp-2 flex w-full items-center rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white"
+                  title={entry.stop.stop_name}
+                >
                   {entry.stop.stop_name}
                 </span>
-
-                <ul class="flex shrink-0 items-center gap-1.5">
-                  <li :for={stop_time <- entry.times} class="shrink-0">
-                    <time class="rounded-md bg-neutral-100 px-2 py-1 text-xs font-semibold tabular-nums text-neutral-700">
-                      {format_time(stop_time.arrival_time)}
-                    </time>
-                  </li>
-                </ul>
-              </li>
-              <li
-                :if={@schedule == []}
-                class="w-full bg-white px-4 py-10 text-center text-sm text-neutral-500"
-              >
-                No schedule available for this day.
               </li>
             </ol>
+
+            <div
+              id="stop-schedule-scroll"
+              role="region"
+              aria-label="Stop timetable, scroll horizontally to see all times"
+              tabindex="0"
+              class="min-w-0 flex-1 overflow-x-auto overscroll-x-contain focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+            >
+              <ol id="stop-schedule" class="w-max min-w-full divide-y divide-neutral-200">
+                <li
+                  :for={entry <- @schedule}
+                  id={"stop-time-#{entry.stop.stop_id}"}
+                  class={[
+                    "flex h-20 w-max min-w-full items-center px-3",
+                    entry.stop.stop_id in @selected_stop_ids && "bg-red-50"
+                  ]}
+                >
+                  <ul class="flex shrink-0 items-center gap-1.5">
+                    <li :for={stop_time <- entry.times} class="shrink-0">
+                      <time class="rounded-md bg-neutral-100 px-2 py-1 text-xs font-semibold tabular-nums text-neutral-700">
+                        {format_time(stop_time.arrival_time)}
+                      </time>
+                    </li>
+                  </ul>
+                </li>
+                <li
+                  :if={@schedule == []}
+                  class="w-full bg-white px-4 py-10 text-center text-sm text-neutral-500"
+                >
+                  No schedule available for this day.
+                </li>
+              </ol>
+            </div>
           </div>
         </section>
       </main>

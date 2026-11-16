@@ -165,7 +165,8 @@ defmodule BusInfoGtfsWeb.RouteLiveTest do
 
       assert has_element?(view, "#stop-schedule-scroll[role='region'].overflow-x-auto")
       assert has_element?(view, "#stop-schedule")
-      assert has_element?(view, "#stop-time-100 .stop-name.sticky.left-0.w-48")
+      assert has_element?(view, "#stop-schedule-names #stop-name-100 .stop-name.w-full")
+      refute has_element?(view, "#stop-schedule-scroll .stop-name")
       assert has_element?(view, "#stop-time-100 ul li time", "06:40")
       assert has_element?(view, "#stop-time-100 time", "06:40")
       assert has_element?(view, "#stop-time-100 time", "07:00")
@@ -178,7 +179,7 @@ defmodule BusInfoGtfsWeb.RouteLiveTest do
 
       assert has_element?(
                view,
-               "#stop-time-100 .stop-name.bg-red-600.text-white",
+               "#stop-name-100 .stop-name.bg-red-600.text-white",
                "Polideportivo Lasesarre"
              )
     end
