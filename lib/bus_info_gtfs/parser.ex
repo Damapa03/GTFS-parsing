@@ -1,6 +1,6 @@
 defmodule BusInfoGtfs.Parser do
   @moduledoc """
-  Parses a directory of GTFS `.txt` files into domain structs.
+  Parses a directory of GTFS `.txt` files into `BusInfoGtfs.Gtfs` structs.
 
   The parser recognizes:
 
@@ -23,7 +23,7 @@ defmodule BusInfoGtfs.Parser do
 
   require Logger
 
-  alias BusInfoGtfs.Domain.{Route, Shape, ShapePoint, Stop, StopTime, Trip}
+  alias BusInfoGtfs.Gtfs.{Route, Shape, ShapePoint, Stop, StopTime, Trip}
 
   @type tables :: %{
           routes: [Route.t()],
@@ -92,7 +92,7 @@ defmodule BusInfoGtfs.Parser do
             {table, parse_known_file(path, basename, table)}
           end)
 
-        {:ok, to_domain(rows)}
+        {:ok, to_models(rows)}
 
       {:error, reason} ->
         {:error, reason}
@@ -187,7 +187,7 @@ defmodule BusInfoGtfs.Parser do
 
   defp put_derived_fields(_table, attrs), do: {:ok, attrs}
 
-  defp to_domain(rows) do
+  defp to_models(rows) do
     %{
       routes: Enum.map(rows.routes, &struct(Route, &1)),
       shapes: build_shapes(rows.shapes),
@@ -206,7 +206,10 @@ defmodule BusInfoGtfs.Parser do
         points
         |> Enum.sort_by(& &1.shape_pt_sequence)
         |> Enum.map(
-          &struct(ShapePoint, Map.take(&1, [:shape_pt_sequence, :shape_lat, :shape_lon]))
+          &struct(
+            ShapePoint,
+            Map.take(&1, [:shape_id, :shape_pt_sequence, :shape_lat, :shape_lon])
+          )
         )
 
       %Shape{shape_id: shape_id, points: points}
