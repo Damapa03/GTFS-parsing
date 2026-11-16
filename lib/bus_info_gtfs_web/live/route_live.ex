@@ -70,6 +70,23 @@ defmodule BusInfoGtfsWeb.RouteLive do
     end
   end
 
+  def handle_event("swap_direction", _params, %{assigns: %{route: %{route_id: 1}}} = socket) do
+    {:noreply, socket}
+  end
+
+  def handle_event("swap_direction", _params, socket) do
+    %{route_from: route_from, route_to: route_to, direction: direction} = socket.assigns
+
+    {:noreply,
+     socket
+     |> assign(:route_from, route_to)
+     |> assign(:route_to, route_from)
+     |> assign(:direction, not direction)
+     |> assign(:selected_stop_ids, [])
+     |> assign(:page_title, "#{route_to} - #{route_from}")
+     |> assign_schedule()}
+  end
+
   defp assign_schedule(socket) do
     %{route: route, day: day, direction: direction} = socket.assigns
     assign(socket, :schedule, Catalog.schedule_for_route(route.route_id, day, direction))
@@ -131,12 +148,13 @@ defmodule BusInfoGtfsWeb.RouteLive do
           </h2>
 
           <button
+            :if={@route.route_id != 1 and @route_to}
             type="button"
             id="swap-direction"
-            disabled
-            aria-label="Swap direction (coming soon)"
-            title="Swap direction (coming soon)"
-            class="flex size-9 shrink-0 cursor-not-allowed items-center justify-center rounded-full text-neutral-300"
+            phx-click="swap_direction"
+            aria-label="Swap route direction"
+            title="Swap route direction"
+            class="flex size-9 shrink-0 items-center justify-center rounded-full text-neutral-600 transition hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
           >
             <.icon name="hero-arrows-right-left" class="size-5" />
           </button>

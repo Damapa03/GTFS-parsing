@@ -32,11 +32,34 @@ defmodule BusInfoGtfsWeb.RouteLiveTest do
       assert has_element?(view, "#back-link .hero-arrow-left")
     end
 
-    test "shows an inert swap direction button", %{conn: conn} do
+    test "hides the swap direction button on route 1", %{conn: conn} do
       {:ok, view, _html} = live(conn, ~p"/routes/1")
 
-      assert has_element?(view, "#swap-direction[disabled]")
-      assert has_element?(view, "#swap-direction .hero-arrows-right-left")
+      refute has_element?(view, "#swap-direction")
+    end
+
+    test "swaps route name and timetable direction", %{conn: conn} do
+      {:ok, view, _html} = live(conn, ~p"/routes/2")
+
+      assert has_element?(view, "#route-from", "ERREKATXO/EL REGATO")
+      assert has_element?(view, "#route-to", "LASESARRE")
+      assert has_element?(view, "#stop-time-100 time", "06:30")
+      refute has_element?(view, "#stop-time-300 time", "07:30")
+
+      view |> element("#swap-direction") |> render_click()
+
+      assert has_element?(view, "#route-from", "LASESARRE")
+      assert has_element?(view, "#route-to", "ERREKATXO/EL REGATO")
+      assert has_element?(view, "#stop-time-300 time", "07:30")
+      assert has_element?(view, "#stop-time-100 time", "08:00")
+      refute has_element?(view, "#stop-time-100 time", "06:30")
+
+      view |> element("#swap-direction") |> render_click()
+
+      assert has_element?(view, "#route-from", "ERREKATXO/EL REGATO")
+      assert has_element?(view, "#route-to", "LASESARRE")
+      assert has_element?(view, "#stop-time-100 time", "06:30")
+      refute has_element?(view, "#stop-time-300 time", "07:30")
     end
   end
 
