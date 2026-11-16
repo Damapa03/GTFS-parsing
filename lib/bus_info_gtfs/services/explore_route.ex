@@ -7,10 +7,10 @@ defmodule BusInfoGtfs.Services.ExploreRoute do
   changing the use cases.
   """
 
-  alias BusInfoGtfs.{Domain.Trip, Storage}
+  alias BusInfoGtfs.{Gtfs.Trip, Storage}
 
   @doc "Lists all routes ordered by `route_id`."
-  @spec routes(Storage.storage()) :: [BusInfoGtfs.Domain.Route.t()]
+  @spec routes(Storage.storage()) :: [BusInfoGtfs.Gtfs.Route.t()]
   def routes(storage), do: Storage.routes(storage)
 
   @doc "Returns the first trip of a route (source order)."
@@ -19,7 +19,7 @@ defmodule BusInfoGtfs.Services.ExploreRoute do
   def first_trip(storage, route_id), do: Storage.first_trip(storage, route_id)
 
   @doc "Returns the stops of a trip ordered by `stop_sequence`."
-  @spec stops_for_trip(Storage.storage(), Trip.t()) :: [BusInfoGtfs.Domain.StopVisit.t()]
+  @spec stops_for_trip(Storage.storage(), Trip.t()) :: [BusInfoGtfs.Gtfs.StopVisit.t()]
   def stops_for_trip(storage, %Trip{trip_id: trip_id}) do
     Storage.stops_for_trip(storage, trip_id)
   end
