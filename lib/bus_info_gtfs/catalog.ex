@@ -20,12 +20,6 @@ defmodule BusInfoGtfs.Catalog do
   @spec get_route(integer()) :: {:ok, BusInfoGtfs.Gtfs.Route.t()} | {:error, :not_found}
   def get_route(route_id), do: ExploreRoute.route(storage(), route_id)
 
-  @doc "Returns the stops of a route for a service day and direction."
-  @spec stops_for_route(integer(), day(), boolean()) :: [BusInfoGtfs.Gtfs.StopVisit.t()]
-  def stops_for_route(route_id, day, direction) do
-    ExploreRoute.stops_for_route(storage(), route_id, day, direction)
-  end
-
   @doc "Returns the timetable of a route for a service day and direction."
   @spec schedule_for_route(integer(), day(), boolean()) :: [
           BusInfoGtfs.Gtfs.StopSchedule.t()

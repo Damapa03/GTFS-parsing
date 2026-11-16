@@ -28,23 +28,6 @@ defmodule BusInfoGtfs.Services.ExploreRoute do
   def frequency_for_day(day), do: Map.fetch!(@day_frequencies, day)
 
   @doc """
-  Returns the stops of a route for the given service day and direction.
-
-  It uses the first trip with more than one stop, which skips incomplete trips
-  that some GTFS feeds include. If no trip has more than one stop, the first
-  single-stop trip is used.
-  """
-  @spec stops_for_route(Storage.storage(), integer(), day(), boolean()) :: [StopVisit.t()]
-  def stops_for_route(storage, route_id, day, direction) do
-    frequency = frequency_for_day(day)
-
-    storage
-    |> Storage.trips(route_id)
-    |> Enum.filter(&(&1.frequency == frequency and &1.direction_id == direction))
-    |> first_complete_stops(storage)
-  end
-
-  @doc """
   Returns the timetable of a route for a service day and direction.
 
   Every trip matching the service frequency and direction is included. Arrival
@@ -86,19 +69,6 @@ defmodule BusInfoGtfs.Services.ExploreRoute do
     stops
     |> Enum.drop(index + 1)
     |> Enum.take(count)
-  end
-
-  defp first_complete_stops(trips, storage) do
-    {complete, single} =
-      Enum.reduce_while(trips, {nil, nil}, fn trip, {_complete, single} ->
-        case stops_for_trip(storage, trip) do
-          [] -> {:cont, {nil, single}}
-          [_] = stops -> {:cont, {nil, single || stops}}
-          stops -> {:halt, {stops, single}}
-        end
-      end)
-
-    complete || single || []
   end
 
   defp build_schedule([]), do: []

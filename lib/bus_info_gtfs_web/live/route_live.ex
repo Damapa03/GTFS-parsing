@@ -41,12 +41,12 @@ defmodule BusInfoGtfsWeb.RouteLive do
     {:noreply,
      socket
      |> assign(:day, parse_day(params["day"]))
-     |> assign_stops()}
+     |> assign_schedule()}
   end
 
-  defp assign_stops(socket) do
+  defp assign_schedule(socket) do
     %{route: route, day: day, direction: direction} = socket.assigns
-    assign(socket, :stops, Catalog.stops_for_route(route.route_id, day, direction))
+    assign(socket, :schedule, Catalog.schedule_for_route(route.route_id, day, direction))
   end
 
   defp parse_route_id(route_id) do
@@ -125,8 +125,8 @@ defmodule BusInfoGtfsWeb.RouteLive do
               />
               <ol id="stop-timeline" class="relative flex items-start">
                 <li
-                  :for={visit <- @stops}
-                  id={"timeline-stop-#{visit.stop.stop_id}"}
+                  :for={entry <- @schedule}
+                  id={"timeline-stop-#{entry.stop.stop_id}"}
                   class="relative flex w-24 shrink-0 flex-col items-center"
                 >
                   <span class="relative flex h-10 w-full items-center justify-center">
@@ -138,16 +138,16 @@ defmodule BusInfoGtfsWeb.RouteLive do
                   </span>
                   <span
                     class="mt-1 w-full truncate px-1 text-center text-[11px] leading-4 text-neutral-500"
-                    title={visit.stop.stop_name}
+                    title={entry.stop.stop_name}
                   >
-                    {visit.stop.stop_name}
+                    {entry.stop.stop_name}
                   </span>
                 </li>
               </ol>
             </div>
           </div>
 
-          <p :if={@stops == []} class="py-6 text-center text-sm text-neutral-500">
+          <p :if={@schedule == []} class="py-6 text-center text-sm text-neutral-500">
             No stops available for this route.
           </p>
         </section>
@@ -173,22 +173,33 @@ defmodule BusInfoGtfsWeb.RouteLive do
           </.link>
         </nav>
 
-        <section aria-label="Arrival times" class="mt-6">
+        <section aria-label="Stop timetable" class="mt-6">
           <ol
-            id="stop-times"
-            class="divide-y divide-neutral-200 overflow-hidden rounded-2xl border border-neutral-200"
+            id="stop-schedule"
+            class="divide-y divide-neutral-200 overflow-hidden rounded-2xl border border-neutral-200 bg-white"
           >
             <li
-              :for={visit <- @stops}
-              id={"stop-time-#{visit.stop.stop_id}"}
-              class="flex items-baseline gap-4 bg-white px-4 py-3"
+              :for={entry <- @schedule}
+              id={"stop-time-#{entry.stop.stop_id}"}
+              class="flex flex-col gap-3 p-3 sm:flex-row sm:items-start"
             >
-              <time class="w-14 shrink-0 text-sm font-semibold tabular-nums text-red-600">
-                {format_time(visit.stop_time.arrival_time)}
-              </time>
-              <span class="text-sm text-neutral-800">{visit.stop.stop_name}</span>
+              <span class="stop-name flex shrink-0 items-center rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white sm:w-48">
+                {entry.stop.stop_name}
+              </span>
+
+              <div class="flex flex-wrap gap-1.5">
+                <time
+                  :for={stop_time <- entry.times}
+                  class="rounded-md bg-neutral-100 px-2 py-1 text-xs font-semibold tabular-nums text-neutral-700"
+                >
+                  {format_time(stop_time.arrival_time)}
+                </time>
+              </div>
             </li>
-            <li :if={@stops == []} class="bg-white px-4 py-10 text-center text-sm text-neutral-500">
+            <li
+              :if={@schedule == []}
+              class="bg-white px-4 py-10 text-center text-sm text-neutral-500"
+            >
               No schedule available for this day.
             </li>
           </ol>

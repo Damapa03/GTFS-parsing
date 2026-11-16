@@ -57,6 +57,7 @@ defmodule BusInfoGtfsWeb.RouteLiveTest do
     test "switches the schedule when a day is selected", %{conn: conn} do
       {:ok, view, _html} = live(conn, ~p"/routes/1")
 
+      assert has_element?(view, "#stop-time-100 time", "06:40")
       assert has_element?(view, "#stop-time-100 time", "07:00")
       assert has_element?(view, "#day-weekday.bg-red-600")
 
@@ -64,6 +65,7 @@ defmodule BusInfoGtfsWeb.RouteLiveTest do
 
       assert_patch(view, ~p"/routes/1?day=saturday")
       assert has_element?(view, "#stop-time-100 time", "08:00")
+      refute has_element?(view, "#stop-time-100 time", "06:40")
       assert has_element?(view, "#day-saturday.bg-red-600")
 
       view |> element("#day-holiday") |> render_click()
@@ -98,28 +100,24 @@ defmodule BusInfoGtfsWeb.RouteLiveTest do
       assert has_element?(view, "#timeline-stop-300", "Muelle de La Benedicta")
     end
 
-    test "lists the arrival time before the stop name", %{conn: conn} do
+    test "lists every trip time for each stop", %{conn: conn} do
       {:ok, view, _html} = live(conn, ~p"/routes/1")
 
+      assert has_element?(view, "#stop-schedule")
+      assert has_element?(view, "#stop-time-100 time", "06:40")
       assert has_element?(view, "#stop-time-100 time", "07:00")
-      assert has_element?(view, "#stop-time-100", "Polideportivo Lasesarre")
-
-      text =
-        view
-        |> render()
-        |> LazyHTML.from_fragment()
-        |> LazyHTML.query_by_id("stop-time-100")
-        |> LazyHTML.text()
-
-      assert String.starts_with?(String.trim(text), "07:00")
+      assert has_element?(view, "#stop-time-200 time", "07:10")
+      assert has_element?(view, "#stop-time-300 time", "07:20")
     end
 
-    test "skips single stop trips", %{conn: conn} do
+    test "styles the stop names with a red background and white text", %{conn: conn} do
       {:ok, view, _html} = live(conn, ~p"/routes/1")
 
-      refute has_element?(view, "#stop-time-100 time", "06:40")
-      assert has_element?(view, "#stop-time-100 time", "07:00")
-      assert has_element?(view, "#stop-time-300")
+      assert has_element?(
+               view,
+               "#stop-time-100 .stop-name.bg-red-600.text-white",
+               "Polideportivo Lasesarre"
+             )
     end
   end
 

@@ -39,37 +39,6 @@ defmodule BusInfoGtfs.Services.ExploreRouteTest do
     end
   end
 
-  describe "stops_for_route/4" do
-    test "returns the ordered stops of a matching trip", %{storage: storage} do
-      assert [
-               %{stop: %{stop_name: "First"}, stop_time: %{arrival_time: 25_200}},
-               %{stop: %{stop_name: "Second"}},
-               %{stop: %{stop_name: "Third"}},
-               %{stop: %{stop_name: "Fourth"}},
-               %{stop: %{stop_name: "Fifth"}}
-             ] = ExploreRoute.stops_for_route(storage, 2, :saturday, false)
-    end
-
-    test "falls back to a single-stop trip", %{storage: storage} do
-      assert [%{stop: %{stop_name: "Depot"}}] =
-               ExploreRoute.stops_for_route(storage, 1, :holiday, false)
-    end
-
-    test "returns an empty list when no trip matches", %{storage: storage} do
-      assert [] = ExploreRoute.stops_for_route(storage, 1, :weekday, false)
-    end
-
-    test "skips single-stop trips when a complete trip exists" do
-      storage = storage!(@web_fixtures)
-
-      assert [
-               %{stop_time: %{arrival_time: 25_200}},
-               %{stop_time: %{arrival_time: 25_830}},
-               %{stop_time: %{arrival_time: 26_400}}
-             ] = ExploreRoute.stops_for_route(storage, 1, :weekday, false)
-    end
-  end
-
   describe "schedule_for_route/4" do
     test "groups every trip of the day and direction by stop" do
       storage = storage!(@web_fixtures)
